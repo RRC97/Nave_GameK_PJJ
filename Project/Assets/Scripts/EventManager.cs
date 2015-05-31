@@ -1,11 +1,22 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 public class EventManager : MonoBehaviour
 {
     private bool effectActive;
     private GodEffect effect;
     private GameObject cube;
+    private string TypeMod = "God";
+    private float Timeday = 0;
+    private bool pause = false;
+    private bool advanced = false;
+
+    [SerializeField]
+    Text mode;
+
+    [SerializeField]
+    Text TimeGod;
 	// Use this for initialization
 	void Start ()
     {
@@ -15,28 +26,47 @@ public class EventManager : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
-        if (effect != GodEffect.None)
+        if (!pause)
+        {
+            if (!advanced)
+            {
+                Timeday += Time.deltaTime;
+                TimeGod.text = "Time:" + " " + Mathf.Floor(Timeday) + " " + "seg";
+            }
+            if (advanced)
+            {
+                Timeday += 0.1f;
+                TimeGod.text = "Time:" + " " + Mathf.Floor(Timeday) + " " + "seg";
+            }
+        }
+
+        Mode();
+
+        if (effect == GodEffect.Thunder)
         {
             SelectedBase();
         }
-	}
+    }
 
     private void SelectedBase()
     {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit[] hits = Physics.RaycastAll(ray);
+        if (TypeMod == "King")
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit[] hits = Physics.RaycastAll(ray);
 
-        foreach (RaycastHit hit in hits)
-        {
-            if (hit.collider != null && hit.collider.gameObject.CompareTag("Ground"))
+            foreach (RaycastHit hit in hits)
             {
-                cube.transform.position = hit.point;
+                if (hit.collider != null && hit.collider.gameObject.CompareTag("Ground"))
+                {
+                    cube.transform.position = hit.point;
+                }
             }
-        }
-        if (Input.GetMouseButtonDown(0))
-        {
-            effect = GodEffect.None;
-            cube = null;
+            if (Input.GetMouseButtonDown(0))
+            {
+                effect = GodEffect.None;
+                cube = null;
+            }
         }
     }
 
@@ -48,7 +78,57 @@ public class EventManager : MonoBehaviour
     public void ClickEventButton(EventButton e)
     {
         effect = e.GetEffect();
-        cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        cube.renderer.material = (Material)Resources.Load("Material/Cube");
+        if (TypeMod == "King")
+        {
+            if (effect == GodEffect.Thunder)
+            {
+                cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                cube.renderer.material = (Material)Resources.Load("Material/Cube");
+            }
+        }
+        if (effect == GodEffect.Change)
+        {
+            if (TypeMod == "King")
+            {
+                TypeMod = "God";
+                return;
+            }
+            if (TypeMod == "God")
+            {
+                TypeMod = "King";
+            }
+        }
+        if (TypeMod == "God")
+        {
+            if (effect == GodEffect.Advanced)
+            {
+                if (!advanced)
+                {
+                    advanced = true;
+                    return;
+                }
+                if (advanced)
+                {
+                    advanced = false;
+                }
+            }
+            if (effect == GodEffect.Pause)
+            {
+                if (pause)
+                {
+                    pause = false;
+                    return;
+                }
+                if (!pause)
+                {
+                    pause = true;
+                }
+            }
+        }
+    }
+
+    public void Mode()
+    {
+        mode.text = "Mod:" + TypeMod;
     }
 }

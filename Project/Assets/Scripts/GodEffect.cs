@@ -3,5 +3,5 @@ using System.Collections;
 
 public enum GodEffect
 {
-    None, Thunder
+    None, Thunder, Change, Advanced, Pause
 }
