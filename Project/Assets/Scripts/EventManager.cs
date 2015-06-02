@@ -11,12 +11,16 @@ public class EventManager : MonoBehaviour
     private float Timeday = 0;
     private bool pause = false;
     private bool advanced = false;
+    private int cubes = 0;
 
     [SerializeField]
     Text mode;
 
     [SerializeField]
     Text TimeGod;
+
+    [SerializeField]
+    Text countCube;
 	// Use this for initialization
 	void Start ()
     {
@@ -46,6 +50,11 @@ public class EventManager : MonoBehaviour
         {
             SelectedBase();
         }
+        if (effect == GodEffect.Remove)
+        {
+            RemoveBase();
+        }
+
     }
 
     private void SelectedBase()
@@ -70,6 +79,14 @@ public class EventManager : MonoBehaviour
         }
     }
 
+    private void RemoveBase()
+    {
+        if (TypeMod == "King")
+        {
+            print("Remove");
+        }
+    }
+
     private void EffectAction()
     {
 
@@ -84,6 +101,7 @@ public class EventManager : MonoBehaviour
             {
                 cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 cube.renderer.material = (Material)Resources.Load("Material/Cube");
+                CubeManager();
             }
         }
         if (effect == GodEffect.Change)
@@ -130,5 +148,10 @@ public class EventManager : MonoBehaviour
     public void Mode()
     {
         mode.text = "Mod:" + TypeMod;
+    }
+    public void CubeManager()
+    {
+        cubes += 1;
+        countCube.text = "Cubes: " + cubes;
     }
 }
