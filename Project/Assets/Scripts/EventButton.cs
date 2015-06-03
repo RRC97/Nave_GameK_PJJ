@@ -4,7 +4,7 @@ using System.Collections;
 public class EventButton : MonoBehaviour
 {
     [SerializeField]
-    private GodEffect effect;
+	private TypeEffect effect;
 	// Use this for initialization
 	void Start ()
     {
@@ -17,7 +17,7 @@ public class EventButton : MonoBehaviour
 	
 	}
 
-    public GodEffect GetEffect()
+    public TypeEffect GetEffect()
     {
         return effect;
     }

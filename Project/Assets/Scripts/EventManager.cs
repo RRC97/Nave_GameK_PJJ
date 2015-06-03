@@ -5,22 +5,21 @@ using UnityEngine.UI;
 public class EventManager : MonoBehaviour
 {
     private bool effectActive;
-    private GodEffect effect;
-    private GameObject cube;
+    private TypeEffect effect;
+    private InstanceLocal cube;
     private string TypeMod = "God";
     private float Timeday = 0;
     private bool pause = false;
     private bool advanced = false;
-    private int cubes = 0;
+    private int cubes, fertility;
+	private Vector3 oldPos;
+	private float timeFertility;
+
+	[SerializeField]
+	GameObject effectObject, painelGod, painelKing;
 
     [SerializeField]
-    Text mode;
-
-    [SerializeField]
-    Text TimeGod;
-
-    [SerializeField]
-    Text countCube;
+	Text mode, TimeGod, countCube, countFertilty;
 	// Use this for initialization
 	void Start ()
     {
@@ -29,35 +28,87 @@ public class EventManager : MonoBehaviour
 	
 	// Update is called once per frame
 	void Update ()
-    {
-        if (!pause)
+	{
+            
+        if (advanced)
         {
-            if (!advanced)
-            {
-                Timeday += Time.deltaTime;
-                TimeGod.text = "Time:" + " " + Mathf.Floor(Timeday) + " " + "seg";
-            }
-            if (advanced)
-            {
-                Timeday += 0.1f;
-                TimeGod.text = "Time:" + " " + Mathf.Floor(Timeday) + " " + "seg";
-            }
+			Time.timeScale = 2;
         }
+		else
+		{
+			Time.timeScale = 1;
+		}
+		
+		if (pause)
+		{
+			Time.timeScale = 0;
+		}
 
-        Mode();
+		Timeday += Time.deltaTime;
 
-        if (effect == GodEffect.Thunder)
+
+		if(timeFertility > 0)
+			timeFertility -= Time.deltaTime;
+
+		cubes = GameObject.FindGameObjectsWithTag("Constrution").Length;
+
+		TextManager();
+
+        if (effect == TypeEffect.Farm)
         {
             SelectedBase();
         }
-        if (effect == GodEffect.Remove)
-        {
-            RemoveBase();
-        }
 
-    }
+		if(effect == TypeEffect.Fertility)
+		{
+			if(timeFertility <= 0)
+			{
+				EffectBase ();
+			}
+		}
 
-    private void SelectedBase()
+		if (effect == TypeEffect.Remove)
+		{
+			RemoveBase();
+		}
+	}
+
+	private void EffectBase()
+	{
+		if (TypeMod == "God")
+		{
+			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+			RaycastHit hit;
+			if (Input.GetMouseButtonDown(0))
+			{
+				effect = TypeEffect.None;
+				
+				if(Physics.Raycast(ray, out hit))
+				{
+					if(hit.collider != null && hit.collider.gameObject.tag.Equals("Constrution"))
+					{
+						GameObject go = (GameObject)Instantiate(effectObject);
+						go.transform.position = hit.collider.transform.position;
+						go.transform.parent = hit.collider.transform;
+						fertility += 5;
+						timeFertility = 10;
+					}
+				}
+			}
+
+			print (1);
+		}
+	}
+
+	public bool InEffect()
+	{
+		if(effect != TypeEffect.None)
+			return true;
+
+		return false;
+	}
+	
+	private void SelectedBase()
     {
         if (TypeMod == "King")
         {
@@ -67,58 +118,86 @@ public class EventManager : MonoBehaviour
             foreach (RaycastHit hit in hits)
             {
                 if (hit.collider != null && hit.collider.gameObject.CompareTag("Ground"))
-                {
-                    cube.transform.position = hit.point;
+				{
+					if(cube.IsCollided())
+					{
+						cube.transform.position = oldPos;
+					}
+
+					oldPos = cube.transform.position;
+					cube.rigidbody.MovePosition(hit.point);
                 }
             }
             if (Input.GetMouseButtonDown(0))
             {
-                effect = GodEffect.None;
-                cube = null;
-            }
+                effect = TypeEffect.None;
+				
+				if(cube.IsCollided())
+				{
+					Destroy(cube.gameObject);
+				}
+
+				cube = null;
+			}
         }
     }
 
-    private void RemoveBase()
-    {
+	private void RemoveBase()
+	{
+		if (TypeMod == "King")
+		{
+			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+			RaycastHit hit;
+			if (Input.GetMouseButtonDown(0))
+			{
+				effect = TypeEffect.None;
+
+				if(Physics.Raycast(ray, out hit))
+				{
+					if(hit.collider != null && hit.collider.gameObject.tag.Equals("Constrution"))
+						Destroy(hit.collider.gameObject);
+				}
+			}
+		}
+	}
+	
+	private void EffectAction()
+	{
+		
+	}
+	
+	public void ClickEventButton(EventButton e)
+	{
+		effect = e.GetEffect();
         if (TypeMod == "King")
         {
-            print("Remove");
-        }
-    }
-
-    private void EffectAction()
-    {
-
-    }
-
-    public void ClickEventButton(EventButton e)
-    {
-        effect = e.GetEffect();
-        if (TypeMod == "King")
-        {
-            if (effect == GodEffect.Thunder)
+            if (effect == TypeEffect.Farm)
             {
-                cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+				cube = go.AddComponent<InstanceLocal> ();
                 cube.renderer.material = (Material)Resources.Load("Material/Cube");
-                CubeManager();
             }
         }
-        if (effect == GodEffect.Change)
+        if (effect == TypeEffect.Change)
         {
             if (TypeMod == "King")
             {
                 TypeMod = "God";
-                return;
+				painelGod.SetActive(true);
+				painelKing.SetActive(false);
             }
-            if (TypeMod == "God")
+            else if (TypeMod == "God")
             {
-                TypeMod = "King";
-            }
-        }
+				TypeMod = "King";
+				painelGod.SetActive(false);
+				painelKing.SetActive(true);
+			}
+
+			effect = TypeEffect.None;
+		}
         if (TypeMod == "God")
         {
-            if (effect == GodEffect.Advanced)
+            if (effect == TypeEffect.Advanced)
             {
                 if (!advanced)
                 {
@@ -128,9 +207,11 @@ public class EventManager : MonoBehaviour
                 if (advanced)
                 {
                     advanced = false;
-                }
-            }
-            if (effect == GodEffect.Pause)
+				}
+				
+				effect = TypeEffect.None;
+			}
+            if (effect == TypeEffect.Pause)
             {
                 if (pause)
                 {
@@ -140,18 +221,22 @@ public class EventManager : MonoBehaviour
                 if (!pause)
                 {
                     pause = true;
-                }
-            }
+				}
+				
+				effect = TypeEffect.None;
+			}
         }
     }
 
-    public void Mode()
+    public void TextManager()
     {
-        mode.text = "Mod:" + TypeMod;
-    }
-    public void CubeManager()
-    {
-        cubes += 1;
-        countCube.text = "Cubes: " + cubes;
+		mode.text = "Mod: " + TypeMod;
+
+		int hours = (Mathf.FloorToInt(Timeday) / 60) % 60;
+		int minute = Mathf.FloorToInt(Timeday) % 60;
+		TimeGod.text = "Time:" + " " + string.Format("{0:00}:{1:00}", hours, minute);
+
+		countCube.text = "Construtions: " + cubes;
+		countFertilty.text = "Fertility: " + fertility;
     }
 }
