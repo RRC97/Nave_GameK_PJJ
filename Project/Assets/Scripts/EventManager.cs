@@ -16,7 +16,7 @@ public class EventManager : MonoBehaviour
 	private float timeFertility;
 
 	[SerializeField]
-	GameObject effectObject, painelGod, painelKing;
+	GameObject effectGod, painelGod, painelKing, effectKing;
 
     [SerializeField]
 	Text mode, TimeGod, countCube, countFertilty;
@@ -87,7 +87,7 @@ public class EventManager : MonoBehaviour
 				{
 					if(hit.collider != null && hit.collider.gameObject.tag.Equals("Constrution"))
 					{
-						GameObject go = (GameObject)Instantiate(effectObject);
+						GameObject go = (GameObject)Instantiate(effectGod);
 						go.transform.position = hit.collider.transform.position;
 						go.transform.parent = hit.collider.transform;
 						fertility += 5;
@@ -95,8 +95,6 @@ public class EventManager : MonoBehaviour
 					}
 				}
 			}
-
-			print (1);
 		}
 	}
 
@@ -118,9 +116,9 @@ public class EventManager : MonoBehaviour
             foreach (RaycastHit hit in hits)
             {
                 if (hit.collider != null && hit.collider.gameObject.CompareTag("Ground"))
-				{
+                {
 					if(cube.IsCollided())
-					{
+                    {
 						cube.transform.position = oldPos;
 					}
 
@@ -154,8 +152,13 @@ public class EventManager : MonoBehaviour
 
 				if(Physics.Raycast(ray, out hit))
 				{
-					if(hit.collider != null && hit.collider.gameObject.tag.Equals("Constrution"))
-						Destroy(hit.collider.gameObject);
+                    if (hit.collider != null && hit.collider.gameObject.tag.Equals("Constrution"))
+                    {
+                        GameObject retry = (GameObject)Instantiate(effectKing);
+                        retry.transform.position = hit.collider.transform.position;
+                        //retry.transform.parent = hit.collider.transform;
+                        Destroy(hit.collider.gameObject);
+                    }
 				}
 			}
 		}

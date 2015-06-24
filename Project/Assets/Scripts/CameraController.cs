@@ -14,13 +14,29 @@ public class CameraController : MonoBehaviour
 
 	private float x, y, lastX, lastY;
 	private bool moveMouse;
+    Vector3 pos;
 	// Update is called once per frame
 	void Update ()
 	{
-		
+        
 		MovimentWithKeyboard ();
 
 		MovimentWithMouse ();
+
+        pos = transform.position;
+        #region
+        if (pos.x >= 7)
+            pos.x = 7;
+        if (pos.x <= -7)
+            pos.x = -7;
+
+        if (pos.z >= 8.5f)
+            pos.z = 8.5f;
+        if (pos.z <= -8.5f)
+            pos.z = -8.5f;
+        #endregion
+
+        transform.position = pos;
 	}
 
 	void MovimentWithKeyboard ()
